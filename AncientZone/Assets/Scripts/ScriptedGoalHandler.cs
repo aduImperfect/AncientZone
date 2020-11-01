@@ -93,7 +93,7 @@ public class ScriptedGoalHandler : MonoBehaviour
             this.GoalStateStepped();
         }
 
-        this.DrawTargetToGoalLines();
+        //this.DrawTargetToGoalLines();
         this.CalculateAngleToGoals();
     }
 

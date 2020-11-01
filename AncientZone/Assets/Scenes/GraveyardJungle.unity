@@ -524,6 +524,11 @@ PrefabInstance:
       propertyPath: PrimaryTarget
       value: 
       objectReference: {fileID: 770284918}
+    - target: {fileID: 1341724999471444014, guid: d474c66ad63d47847bea468f9d5086b2,
+        type: 3}
+      propertyPath: doSweepOnce
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d474c66ad63d47847bea468f9d5086b2, type: 3}
 --- !u!1 &770284918
@@ -1164,6 +1169,11 @@ PrefabInstance:
         type: 3}
       propertyPath: secondaryMaxTimeLimitMovementState
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1341724999471444014, guid: d474c66ad63d47847bea468f9d5086b2,
+        type: 3}
+      propertyPath: doSweepOnce
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d474c66ad63d47847bea468f9d5086b2, type: 3}

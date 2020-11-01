@@ -38,6 +38,8 @@ public class BasicEnemyController : MonoBehaviour
     public float secondaryMinTimeLimitMovementState;
     public float secondaryMaxTimeLimitMovementState;
 
+    public bool doSweepOnce;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -81,7 +83,13 @@ public class BasicEnemyController : MonoBehaviour
             Debug.DrawRay(this.transform.position, (this.transform.position - this.PrimaryTarget.transform.position).normalized * this.forwardMagnitude);
         }
         
-        Debug.DrawRay(this.transform.position, this.transform.forward * this.forwardMagnitude);
+        //Debug.DrawRay(this.transform.position, this.transform.forward * this.forwardMagnitude);
+
+        if(this.doSweepOnce)
+        {
+            this.DrawCastHitPoints();
+            //this.doSweepOnce = false;
+        }
     }
 
     void PrimaryMovementState()
@@ -96,5 +104,17 @@ public class BasicEnemyController : MonoBehaviour
         int secondaryMovementStateInt = StateHandler.CurrentState(ref this.timeInSecondaryMovementState, this.timeLimitForSecondaryMovementState, this.randSecondaryMovementPercentVal, this.SecondaryMovementStatePercentages, (int)EnemyStateData.EnemySecondaryMovementState.Count);
 
         this.eSecondaryMovementState = (secondaryMovementStateInt == -1) ? this.eSecondaryMovementState : (EnemyStateData.EnemySecondaryMovementState)secondaryMovementStateInt;
+    }
+
+    void DrawCastHitPoints()
+    {
+        List<RaycastHit> castHitList = VertexCheckers.SweepAround(this.transform);
+
+        for(int i = 0; i < castHitList.Count; ++i)
+        {
+            Vector3 direc = castHitList[i].point - this.transform.position;
+
+            Debug.DrawRay(this.transform.position, direc);
+        }
     }
 }
