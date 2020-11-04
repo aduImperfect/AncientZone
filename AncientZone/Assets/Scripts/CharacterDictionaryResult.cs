@@ -41,7 +41,7 @@ public class CharacterDictionaryResult : MonoBehaviour
         this.enemyPrimaryMovementDictionary.Add(EnemyStateData.EnemyPrimaryMovementState.Walk, this.SpeedValueData[2]);
         this.enemyPrimaryMovementDictionary.Add(EnemyStateData.EnemyPrimaryMovementState.Run, this.SpeedValueData[3]);
         
-        this.enemySecondaryMovementDictionary.Add(EnemyStateData.EnemySecondaryMovementState.Standing, this.SpeedValueData[0]);
+        this.enemySecondaryMovementDictionary.Add(EnemyStateData.EnemySecondaryMovementState.None, this.SpeedValueData[0]);
         this.enemySecondaryMovementDictionary.Add(EnemyStateData.EnemySecondaryMovementState.Strafing, this.SpeedValueData[1]);
     }
 

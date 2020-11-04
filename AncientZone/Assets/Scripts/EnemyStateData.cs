@@ -16,7 +16,7 @@ public class EnemyStateData : MonoBehaviour
 
     public enum EnemySecondaryMovementState
     {
-        Standing = 0,
+        None = 0,
         Strafing,
         Count,
     }

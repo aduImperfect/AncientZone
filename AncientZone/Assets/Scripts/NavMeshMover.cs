@@ -37,6 +37,6 @@ public class NavMeshMover : MonoBehaviour
 
         navAgent.destination = currGoal;
 
-        Debug.DrawRay(this.transform.position, this.transform.forward * this.forwardMagnitude);
+        //Debug.DrawRay(this.transform.position, this.transform.forward * this.forwardMagnitude);
     }
 }

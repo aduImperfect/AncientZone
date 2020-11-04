@@ -7,6 +7,10 @@ public class ScriptedGoalHandler : MonoBehaviour
 {
     public List<Vector3> Goals;
     public List<float> GoalsAuraRanges;
+    public List<float> AngleToGoals;
+
+    public List<Vector3> castHitPointsList;
+    public List<Vector3> castHitPointsDirList;
 
     public float minAuraRange;
     public float maxAuraRange;
@@ -40,12 +44,13 @@ public class ScriptedGoalHandler : MonoBehaviour
 
     public bool isRandomized;
 
-    public List<float> AngleToGoals;
-
     public GameObject PrefabDebugCube;
 
-    [SerializeField]
     public NavMeshPath meshPath;
+
+    public float timeSinceLastGoalReached;
+
+    public float maxTimeWandering;
 
     // Start is called before the first frame update
     void Start()
@@ -62,6 +67,17 @@ public class ScriptedGoalHandler : MonoBehaviour
 
         this.numGoals = Random.Range(this.minNumGoals, this.maxNumGoals);
 
+        this.castHitPointsList = VertexCheckers.GetCastHitPoints(VertexCheckers.SweepAround(this.transform));
+
+        this.castHitPointsDirList = new List<Vector3>();
+
+        this.timeSinceLastGoalReached = 0.0f;
+
+        for (int dirIdx = 0; dirIdx < this.castHitPointsList.Count; ++dirIdx)
+        {
+            this.castHitPointsDirList.Add(this.castHitPointsList[dirIdx] - this.transform.position);
+        }
+
         for (int jdx = 0; jdx < this.numGoals; ++jdx)
         {
             this.GoalsAuraRanges.Add(Random.Range(minAuraRange, maxAuraRange));
@@ -69,7 +85,7 @@ public class ScriptedGoalHandler : MonoBehaviour
 
         for (int idx = 0; idx < this.numGoals; ++idx)
         {
-            this.Goals.Add(CalculateNewVectorPoint(idx));
+            this.Goals.Add(this.CalculateNewVectorPoint(idx));
         }
 
         for (int indx = 0; indx < Goals.Count; ++indx)
@@ -84,7 +100,9 @@ public class ScriptedGoalHandler : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(this.isRandomized)
+        this.timeSinceLastGoalReached += Time.deltaTime;
+
+        if (this.isRandomized)
         {
             this.GoalStateRandomized();
         }
@@ -93,7 +111,7 @@ public class ScriptedGoalHandler : MonoBehaviour
             this.GoalStateStepped();
         }
 
-        //this.DrawTargetToGoalLines();
+        this.DrawTargetToGoalLines();
         this.CalculateAngleToGoals();
     }
 
@@ -117,7 +135,30 @@ public class ScriptedGoalHandler : MonoBehaviour
                     ++this.currentGoalIndex;
                 }
                 this.timeInGoalPositionState = 0.0f;
+                this.timeSinceLastGoalReached = 0.0f;
             }
+        }
+        else if (this.timeSinceLastGoalReached > this.maxTimeWandering)
+        {
+            //This goal is no longer required!!
+            this.Goals.RemoveAt(this.currentGoalIndex);
+            this.GoalsAuraRanges.RemoveAt(this.currentGoalIndex);
+            this.AngleToGoals.RemoveAt(this.currentGoalIndex);
+
+            this.GoalsAuraRanges.Add(Random.Range(minAuraRange, maxAuraRange));
+            this.Goals.Add(this.CalculateNewVectorPoint(this.Goals.Count));
+            this.AngleToGoals.Add(0.0f);
+
+            if (this.currentGoalIndex == (this.Goals.Count - 1))
+            {
+                this.currentGoalIndex = 0;
+            }
+            else
+            {
+                ++this.currentGoalIndex;
+            }
+            this.timeInGoalPositionState = 0.0f;
+            this.timeSinceLastGoalReached = 0.0f;
         }
     }
 
@@ -133,15 +174,30 @@ public class ScriptedGoalHandler : MonoBehaviour
             if (this.timeInGoalPositionState > this.timeLimitForGoalPositionState)
             {
                 this.currentGoalIndex = Random.Range(0, this.Goals.Count - 1);
-                
                 this.timeInGoalPositionState = 0.0f;
+                this.timeSinceLastGoalReached = 0.0f;
             }
+        }
+        else if (this.timeSinceLastGoalReached > this.maxTimeWandering)
+        {
+            //This goal is no longer required!!
+            this.Goals.RemoveAt(this.currentGoalIndex);
+            this.GoalsAuraRanges.RemoveAt(this.currentGoalIndex);
+            this.AngleToGoals.RemoveAt(this.currentGoalIndex);
+
+            this.GoalsAuraRanges.Add(Random.Range(minAuraRange, maxAuraRange));
+            this.Goals.Add(this.CalculateNewVectorPoint(this.Goals.Count));
+            this.AngleToGoals.Add(0.0f);
+
+            this.currentGoalIndex = Random.Range(0, this.Goals.Count - 1);
+            this.timeInGoalPositionState = 0.0f;
+            this.timeSinceLastGoalReached = 0.0f;
         }
     }
 
     void DrawTargetToGoalLines()
     {
-        foreach(Vector3 goalPos in Goals)
+        foreach (Vector3 goalPos in Goals)
         {
             Debug.DrawLine(this.characterTransform.position, goalPos);
         }
@@ -176,15 +232,36 @@ public class ScriptedGoalHandler : MonoBehaviour
         bool isPathValid = NavMesh.CalculatePath(characterPos, newPos, NavMesh.AllAreas, this.meshPath);
 
         int kIndex = 0;
-        while (((characterGoalDist.magnitude > this.goalMagnitude) || (!isPathValid)) || ((index != 0) && (kIndex < index) && ((newPos - this.Goals[kIndex]).magnitude < this.GoalsAuraRanges[kIndex++])))
+        while ((characterGoalDist.magnitude > this.goalMagnitude) || (!isPathValid) || ((index != 0) && (kIndex < index) && ((newPos - this.Goals[kIndex]).magnitude < this.GoalsAuraRanges[kIndex++])))
         {
             newPos = new Vector3(characterPos.x + Random.Range(this.minXLoc, this.maxXLoc), characterPos.y, characterPos.z + Random.Range(this.minZLoc, this.maxZLoc));
-
-            isPathValid = NavMesh.CalculatePath(characterPos, newPos, NavMesh.AllAreas, this.meshPath);
-
             characterGoalDist = newPos - characterPos;
-
+            isPathValid = NavMesh.CalculatePath(characterPos, newPos, NavMesh.AllAreas, this.meshPath);
             kIndex = 0;
+        }
+
+        for (int dirIdx = 0; dirIdx < this.castHitPointsDirList.Count; ++dirIdx)
+        {
+            Vector3 normalizedCastPointDir = this.castHitPointsDirList[dirIdx].normalized;
+
+            Vector3 normalizedNewPosDir = characterGoalDist.normalized;
+
+            int normNewXVal = (int)(normalizedNewPosDir.x * 100);
+            int normNewZVal = (int)(normalizedNewPosDir.z * 100);
+
+            int normCastPtXVal = (int)(normalizedCastPointDir.x * 100);
+            int normCastPtZVal = (int)(normalizedCastPointDir.z * 100);
+
+            if((normNewXVal != normCastPtXVal) || (normNewZVal != normCastPtZVal))
+            {
+                continue;
+            }
+
+            if(characterGoalDist.magnitude > this.castHitPointsDirList[dirIdx].magnitude)
+            {
+                newPos = this.castHitPointsList[dirIdx];
+                characterGoalDist = newPos - characterPos;
+            }
         }
 
         return newPos;

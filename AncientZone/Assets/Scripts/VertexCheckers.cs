@@ -26,6 +26,7 @@ public class VertexCheckers
 
         return true;
     }
+
     public static List<RaycastHit> SweepAround(Transform currTrans)
     {
         List<RaycastHit> rayCastinfoList = new List<RaycastHit>();
@@ -43,6 +44,17 @@ public class VertexCheckers
         }
 
         return rayCastinfoList;
+    }
+    public static List<Vector3> GetCastHitPoints(List<RaycastHit> castHitList)
+    {
+        List<Vector3> castHitPointsList = new List<Vector3>();
+
+        for (int i = 0; i < castHitList.Count; ++i)
+        {
+            castHitPointsList.Add(castHitList[i].point);
+        }
+
+        return castHitPointsList;
     }
 
     public static RaycastHit RayCollision(Vector3 pos, Vector3 dir)
